@@ -1,0 +1,17 @@
+# This is the network config written by 'subiquity'
+
+# eth0 : NetNetwork 10.10.10.0/24
+# eth1 : hostonlyadapter2
+# eth2 : ProviderNetwork1
+
+network:
+  ethernets:
+    eth0:
+      dhcp4: true
+    eth1:
+            addresses:
+                    - 10.0.0.11/24
+            nameservers:
+                    addresses: [8.8.8.8]
+    eth2: {}
+  version: 2
