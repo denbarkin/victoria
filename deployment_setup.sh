@@ -18,7 +18,7 @@ apt upgrade -y
 
 apt install -y python3-dev libffi-dev gcc libssl-dev
 apt install -y python3-pip
-pip3 install -U pip -y
+pip3 install -U pip
 
 apt install -y python-jinja2 python-pip libssl-dev
 

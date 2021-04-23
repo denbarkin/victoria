@@ -66,7 +66,10 @@ kolla-ansible -i kolla/multinode deploy
 
 kolla-ansible post-deploy
 
+# openstackclient
+pip3 install -U pip
 pip install python3-openstackclient
+apt install python3-openstackclient
 
 cp /home/vagrant/kolla/init-runonce /usr/local/share/kolla-ansible/init-runonce
 . /etc/kolla/admin-openrc.sh
