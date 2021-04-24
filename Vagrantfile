@@ -55,9 +55,11 @@ Vagrant.configure(2) do |config|
                 vb.customize ["modifyvm", :id, "--nic3", "natnetwork", "--nat-network3", "ProviderNetwork1", "--nicpromisc3", "allow-all"]
                 if machine[:hostname] == "block1"
                     file_to_disk = File.realpath( "." ).to_s + "/block20cinder.vdi"
-                    vb.customize ['createhd', '--filename', file_to_disk, '--format', 'VDI', '--size', "30720"]
-                   # In line below: 'SCSI' may have to be changed to possibly other name of Storage Controller Name of VirtualBox VM
-                    vb.customize ['storageattach', :id, '--storagectl', 'SCSI', '--port', 2, '--device', 0, '--type', 'hdd', '--medium', file_to_disk]
+                    unless File.file?(file_to_disk)
+                      vb.customize ['createhd', '--filename', file_to_disk, '--format', 'VDI', '--size', "30720"]
+                       # In line below: 'SCSI' may have to be changed to possibly other name of Storage Controller Name of VirtualBox VM
+                      vb.customize ['storageattach', :id, '--storagectl', 'SCSI', '--port', 2, '--device', 0, '--type', 'hdd', '--medium', file_to_disk]
+                    end  
                 end
               end
             node.vm.provision "shell", inline: machine[:script], privileged: true, run: "once"

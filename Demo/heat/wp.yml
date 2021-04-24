@@ -1,0 +1,115 @@
+heat_template_version: 2017-09-01
+
+description: >
+  An example Heat Orchestration Template (HOT).
+  Install Wordpress with Container technology
+  WordPress is web software you can use to create a beautiful website
+  or blog. This template installs two instances: one running a
+  WordPress deployment and the other using a local MySQL database to
+  store the data.
+parameters:
+  public_network:
+    type: string
+    label: Public network name or ID
+    description: Public network with floating IP addresses.
+    default: public1
+  
+  private_network:
+    type: string
+    label: Private network name or ID
+    description: Private network without Internet access
+    default: demo-net
+  
+  db_name:
+    type: string
+    description: WordPress database name
+    default: DBwordpress
+    constraints:
+      - length: { min: 1, max: 64 }
+        description: db_name must be between 1 and 64 characters
+      - allowed_pattern: '[a-zA-Z][a-zA-Z0-9]*'
+        description: >
+          db_name must begin with a letter and contain only alphanumeric
+          characters
+  
+  db_username:
+    type: string
+    description: The WordPress database admin account username
+    default: admin
+    hidden: true
+    constraints:
+      - length: { min: 1, max: 16 }
+        description: db_username must be between 1 and 16 characters
+      - allowed_pattern: '[a-zA-Z][a-zA-Z0-9]*'
+        description: >
+          db_username must begin with a letter and contain only alphanumeric
+          characters
+  
+  db_password:
+    type: string
+    description: The WordPress database admin account password
+    default: admin
+    hidden: true
+    constraints:
+      - length: { min: 1, max: 41 }
+        description: db_password must be between 1 and 41 characters
+      - allowed_pattern: '[a-zA-Z0-9]*'
+        description: db_password must contain only alphanumeric characters
+  
+  db_root_password:
+    type: string
+    description: Root password for MySQL
+    default: aaskby1234
+    hidden: true
+    constraints:
+      - length: { min: 1, max: 41 }
+        description: db_root_password must be between 1 and 41 characters
+      - allowed_pattern: '[a-zA-Z0-9]*'
+        description: db_root_password must contain only alphanumeric characters
+
+resources:
+  db:
+    type: OS::Zun::Container
+    properties:
+      image: mysql:latest
+      environment:
+        MYSQL_ROOT_PASSWORD: {get_param: db_root_password}
+        MYSQL_DATABASE: { get_param: db_name }
+        MYSQL_USER: { get_param: db_username }
+        MYSQL_PASSWORD: { get_param: db_password}
+      networks:
+      - network: {get_param: private_network}
+  
+  wordpress:
+    type: OS::Zun::Container
+    properties:
+      image: "wordpress:latest"
+      environment:
+        WORDPRESS_DB_HOST: { get_attr: [db, addresses,  { get_param: private_network}, 0, addr] }
+        WORDPRESS_DB_USER: { get_param: db_username }
+        WORDPRESS_DB_PASSWORD: { get_param: db_password }
+      networks:
+      - network: {get_param: private_network}
+
+  floating_ip:
+    type: OS::Neutron::FloatingIP
+    properties:
+      floating_network: { get_param: public_network }
+  
+  floating_ip_assoc:
+    type: OS::Neutron::FloatingIPAssociation
+    properties:
+      floatingip_id: { get_resource: floating_ip }
+      port_id: {get_attr: [wordpress, addresses,  {get_param: private_network}, 0, port]}
+
+outputs:
+  WebsiteURL:
+    description: URL for Wordpress Internal wiki
+    value:
+      str_replace:
+        template: http://host/wordpress
+        params:
+          host: { get_attr: [wordpress, addresses,  {get_param: private_network}, 0] }
+  Web:
+    description: The web server url
+    value: {get_attr: [floating_ip, floating_ip_address]}
