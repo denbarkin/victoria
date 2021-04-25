@@ -12,7 +12,7 @@ servers=[
   {
     :hostname => "compute1",
     :box => "ubuntu/focal64",
-    :ram => 6144,
+    :ram => 8192,
     :cpu => 6,
     :disk => "10GB",
     :script => "sh /vagrant/compute1_setup.sh"
@@ -24,6 +24,14 @@ servers=[
     :cpu => 2,
     :disk => "10GB",
     :script => "sh /vagrant/block1_setup.sh"
+  },
+  {
+    :hostname => "network1",
+    :box => "ubuntu/focal64",
+    :ram => 2048,
+    :cpu => 2,
+    :disk => "10GB",
+    :script => "sh /vagrant/network1_setup.sh"
   },
   {
     :hostname => "monitor1",
@@ -53,6 +61,10 @@ Vagrant.configure(2) do |config|
                 vb.customize ["modifyvm", :id, "--memory", machine[:ram], "--cpus", machine[:cpu]]
                 vb.customize ["modifyvm", :id, "--nic2", "hostonly", "--hostonlyadapter2", "vboxnet1"]
                 vb.customize ["modifyvm", :id, "--nic3", "natnetwork", "--nat-network3", "ProviderNetwork1", "--nicpromisc3", "allow-all"]
+                if machine[:hostname] == "network1"
+                  vb.customize ["modifyvm", :id, "--nic4", "bridged", "--bridgeadapter4", "en0", "--nicpromisc4", "allow-all"]
+                end
+                
                 if machine[:hostname] == "block1"
                     file_to_disk = File.realpath( "." ).to_s + "/block20cinder.vdi"
                     unless File.file?(file_to_disk)

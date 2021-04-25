@@ -7,16 +7,19 @@ cp /vagrant/.vagrant/machines/controller/virtualbox/private_key .ssh/controller.
 cp /vagrant/.vagrant/machines/compute1/virtualbox/private_key .ssh/compute1.pem
 cp /vagrant/.vagrant/machines/block1/virtualbox/private_key .ssh/block1.pem
 cp /vagrant/.vagrant/machines/monitor1/virtualbox/private_key .ssh/monitor1.pem
+cp /vagrant/.vagrant/machines/network1/virtualbox/private_key .ssh/network1.pem
 
 chmod 600 .ssh/controller.pem
 chmod 600 .ssh/compute1.pem
 chmod 600 .ssh/block1.pem
 chmod 600 .ssh/monitor1.pem
+chmod 600 .ssh/network1.pem
 
 ssh -i .ssh/controller.pem vagrant@controller echo "OK"
 ssh -i .ssh/compute1.pem vagrant@compute1 echo "OK"
 ssh -i .ssh/block1.pem vagrant@block1 echo "OK"
 ssh -i .ssh/monitor1.pem vagrant@monitor1 echo "OK"
+ssh -i .ssh/network1.pem vagrant@network1 echo "OK"
 
 apt install ansible
 
@@ -58,6 +61,7 @@ EOF
 # copy modified Globals to /etc/kolla
 #cp /home/vagrant/kolla/globals.yml /etc/kolla
 cp /vagrant/globals.yml /etc/kolla/
+cp /vagrant/multinode kolla/
 
 kolla-genpwd
 kolla-ansible -i kolla/multinode bootstrap-servers
